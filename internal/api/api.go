@@ -5,12 +5,6 @@ import (
 	"net/http"
 )
 
-type ApiHandler interface {
-	GetPath() string
-	GetHandler() http.Handler
-	Register()
-}
-
 type ApiServer struct {
 	listenAddr string
 	server     *http.ServeMux
@@ -23,10 +17,9 @@ func New(listenAddr string) *ApiServer {
 	}
 }
 
-func (s *ApiServer) Register(routers ...ApiHandler) {
+func (s *ApiServer) Register(routers ...HTTPRouter) {
 	for _, router := range routers {
-		router.Register()
-		s.server.Handle(router.GetPath()+"/", http.StripPrefix(router.GetPath(), router.GetHandler()))
+		router.Register(s.server)
 	}
 }
 
