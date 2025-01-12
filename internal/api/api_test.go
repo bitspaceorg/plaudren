@@ -9,10 +9,10 @@ import (
 func TestRouter(t *testing.T) {
 	server := New(":8000")
 	testRouter := NewRouter("/")
-	testRouter.Get("/", func(w http.ResponseWriter, r *http.Request) *ApiError {
+	testRouter.Get("/", func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("ok"))
-		return nil
+		return nil, nil
 	})
 	server.Register(testRouter)
 
@@ -33,17 +33,17 @@ func TestRouter(t *testing.T) {
 func TestNestedRouter(t *testing.T) {
 	server := New(":8000")
 	testRouter := NewRouter("/test")
-	testRouter.Get("/", func(w http.ResponseWriter, r *http.Request) *ApiError {
+	testRouter.Get("/", func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("test"))
-		return nil
+		return nil, nil
 	})
 
 	nestedRouter := NewRouter("/")
-	nestedRouter.Get("/", func(w http.ResponseWriter, r *http.Request) *ApiError {
+	nestedRouter.Get("/", func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("nest"))
-		return nil
+		return nil, nil
 	})
 
 	testRouter.Handle("/nest", nestedRouter)
@@ -80,17 +80,17 @@ func TestNestedRouter(t *testing.T) {
 func TestOtherMethods(t *testing.T) {
 	server := New(":8000")
 	testRouter := NewRouter("/test")
-	testRouter.Get("/", func(w http.ResponseWriter, r *http.Request) *ApiError {
+	testRouter.Get("/", func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("test"))
-		return nil
+		return nil, nil
 	})
 
 	nestedRouter := NewRouter("/")
-	nestedRouter.Post("/", func(w http.ResponseWriter, r *http.Request) *ApiError {
+	nestedRouter.Post("/", func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("nest"))
-		return nil
+		return nil, nil
 	})
 
 	testRouter.Handle("/nest", nestedRouter)
@@ -131,14 +131,14 @@ func (a *TestApi) Register() {
 	a.Router.Get("/", a.TestHttpFunc)
 }
 
-func (a *TestApi) TestHttpFunc(w http.ResponseWriter,r *http.Request) *ApiError{
+func (a *TestApi) TestHttpFunc(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
 	w.Write([]byte("ok"))
-	return nil
+	return nil, nil
 }
 
 func TestStructImpl(t *testing.T) {
-	server:= New(":8000")
-	api:=&TestApi{
+	server := New(":8000")
+	api := &TestApi{
 		Router: NewRouter("/"),
 	}
 	server.Register(api)
