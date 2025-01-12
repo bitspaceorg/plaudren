@@ -2,8 +2,11 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
+	"strings"
 )
 
 // type of the function that handles the http request
@@ -29,7 +32,10 @@ type HTTPRouter interface {
 	Handle(string, HTTPRouter)
 
 	//register the router with a mux to handle http transport
-	Register(*http.ServeMux)
+	RegisterServer(*http.ServeMux)
+
+	//called before the router is attached to the server
+	Register()
 }
 
 // allowed methods
@@ -41,15 +47,7 @@ const (
 	DELETE HTTPMethod = "DELETE"
 )
 
-/*
-TODO:
-1. fix strip '/' in url
-2. test for nested routers
-2. test for other methods
-*/
-
-
-//handles the URI of the api which is to be registered with the Router
+// handles the URI of the api which is to be registered with the Router
 type Route struct {
 	method   HTTPMethod
 	path     string
@@ -71,12 +69,15 @@ func (route *Route) GetHandler() func(http.ResponseWriter, *http.Request) {
 	}
 }
 
-func NewRoute(method HTTPMethod, path string, httpfunc HTTPFunc) *Route {
+func NewRoute(method HTTPMethod, path string, httpfunc HTTPFunc) (*Route, error) {
+	if len(path) == 0 || path[0] != '/' {
+		return nil, errors.New("Invalid Route")
+	}
 	return &Route{
 		method:   method,
 		path:     path,
 		httpfunc: httpfunc,
-	}
+	}, nil
 }
 
 // router contains a group of routes
@@ -93,37 +94,73 @@ func NewRouter(path string) *Router {
 }
 
 func (r *Router) Get(path string, httpFunc HTTPFunc) {
-	r.routes = append(r.routes, *NewRoute(GET, path, httpFunc))
+	route, err := NewRoute(GET, path, httpFunc)
+	if err != nil {
+		slog.Error("Invalid route", "path", path)
+		return
+	}
+	r.routes = append(r.routes, *route)
 }
 
 func (r *Router) Put(path string, httpFunc HTTPFunc) {
-	r.routes = append(r.routes, *NewRoute(PUT, path, httpFunc))
+	route, err := NewRoute(PUT, path, httpFunc)
+	if err != nil {
+		slog.Error("Invalid route", "path", path)
+		return
+	}
+	r.routes = append(r.routes, *route)
 }
 
 func (r *Router) Post(path string, httpFunc HTTPFunc) {
-	r.routes = append(r.routes, *NewRoute(POST, path, httpFunc))
+	route, err := NewRoute(POST, path, httpFunc)
+	if err != nil {
+		slog.Error("Invalid route", "path", path)
+		return
+	}
+	r.routes = append(r.routes, *route)
 }
 
 func (r *Router) Patch(path string, httpFunc HTTPFunc) {
-	r.routes = append(r.routes, *NewRoute(PATCH, path, httpFunc))
+	route, err := NewRoute(PATCH, path, httpFunc)
+	if err != nil {
+		slog.Error("Invalid route", "path", path)
+		return
+	}
+	r.routes = append(r.routes, *route)
 }
 
 func (r *Router) Delete(path string, httpFunc HTTPFunc) {
-	r.routes = append(r.routes, *NewRoute(DELETE, path, httpFunc))
+	route, err := NewRoute(DELETE, path, httpFunc)
+	if err != nil {
+		slog.Error("Invalid route", "path", path)
+		return
+	}
+	r.routes = append(r.routes, *route)
 }
 
 func (r *Router) GetRoutes() []Route {
 	return r.routes
 }
 
+// Registers a router with the given path
 func (r *Router) Handle(path string, router HTTPRouter) {
+	//calls the initialization of the router	
+	router.Register()
+
+	r.path = strings.TrimRight(r.path, "/")
+	r.path = fmt.Sprintf("%s%s", r.path, path)
+
 	for _, route := range router.GetRoutes() {
-		route.path = fmt.Sprintf("%s/%s", r.path, route.path)
+		route.path = fmt.Sprintf("%s%s", r.path, strings.TrimRight(route.path, "/"))
 		r.routes = append(r.routes, route)
 	}
 }
 
-func (r *Router) Register(mux *http.ServeMux) {
+func (r *Router) Register() {
+}
+
+func (r *Router) RegisterServer(mux *http.ServeMux) {
+	r.Register()
 	for _, route := range r.routes {
 		mux.HandleFunc(route.GetRoute(), route.GetHandler())
 	}

@@ -19,7 +19,8 @@ func New(listenAddr string) *ApiServer {
 
 func (s *ApiServer) Register(routers ...HTTPRouter) {
 	for _, router := range routers {
-		router.Register(s.server)
+		router.Register()
+		router.RegisterServer(s.server)
 	}
 }
 
