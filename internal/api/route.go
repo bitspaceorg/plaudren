@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 type HTTPMethod string
@@ -25,8 +26,9 @@ type Route struct {
 	httpfunc HTTPFunc
 }
 
-func (route *Route) GetRoute() string {
-	return fmt.Sprintf("%s %s", route.method, route.path)
+func (route *Route) GetRoute(basePath string) string {
+	basePath = strings.TrimRight(basePath, "/")
+	return fmt.Sprintf("%s %s%s", route.method, basePath, route.path)
 }
 
 // return the http handler for the routes
@@ -39,7 +41,6 @@ func (route *Route) GetHandler() func(http.ResponseWriter, *http.Request) {
 		if err != nil {
 			w.WriteHeader(err.code)
 			json.NewEncoder(w).Encode(err)
-			return
 		} else if data != nil {
 			w.WriteHeader(data.code)
 			json.NewEncoder(w).Encode(data)

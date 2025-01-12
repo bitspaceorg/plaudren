@@ -15,7 +15,11 @@ func NewUserRouter() *UserRouter {
 	}
 }
 
-func (s *UserRouter) Login(w http.ResponseWriter, r *http.Request) *api.ApiError {
-	w.Write([]byte("ok\r\n"))
-	return nil
+func (s *UserRouter) Register() {
+	s.Router.Get("/login", s.Login)
+}
+
+func (s *UserRouter) Login(w http.ResponseWriter, r *http.Request) (*api.ApiData, *api.ApiError) {
+
+	return nil, api.NewError("fucked").SetCode(500)
 }

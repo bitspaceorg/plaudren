@@ -1,30 +1,30 @@
 package api
 
 type ApiError struct {
-	Message string `json:"message"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
 	code    int
-	Data    interface{} `jsong:"data"`
 }
 
 func (e *ApiError) Error() string {
 	return e.Message
 }
 
-func NewError(message string, args ...interface{}) *ApiError {
+func NewError(message string) *ApiError {
 	err := &ApiError{
 		Message: message,
-		code:    400,
 		Data:    nil,
+		code:    400,
 	}
-	if len(args) > 0 {
-		if code, ok := args[0].(int); ok {
-			err.code = code
-		}
-	}
-
-	if len(args) > 1 {
-		err.Data = args[1]
-	}
-
 	return err
+}
+
+func (e *ApiError) SetCode(code int) *ApiError {
+	e.code = code
+	return e
+}
+
+func (e *ApiError) SetData(data interface{}) *ApiError{
+	e.Data=data
+	return e
 }

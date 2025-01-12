@@ -115,8 +115,7 @@ func (r *Router) Register() {
 }
 
 func (r *Router) RegisterServer(mux *http.ServeMux) {
-	r.Register()
 	for _, route := range r.routes {
-		mux.HandleFunc(route.GetRoute(), route.GetHandler())
+		mux.HandleFunc(route.GetRoute(r.path), route.GetHandler())
 	}
 }

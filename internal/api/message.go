@@ -1,26 +1,26 @@
 package api
 
 type ApiData struct {
-	Message string `json:"message"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
 	code    int
-	Data    interface{} `jsong:"data"`
 }
 
-func NewApiData(message string, args ...interface{}) *ApiData {
+func NewApiData(message string) *ApiData {
 	data := &ApiData{
 		Message: message,
 		code:    200,
 		Data:    nil,
 	}
-	if len(args) > 0 {
-		if code, ok := args[0].(int); ok {
-			data.code = code
-		}
-	}
-
-	if len(args) > 1 {
-		data.Data = args[1]
-	}
-
 	return data
+}
+
+func (e *ApiData) SetCode(code int) *ApiData {
+	e.code = code
+	return e
+}
+
+func (e *ApiData) SetData(data interface{}) *ApiData {
+	e.Data = data
+	return e
 }
