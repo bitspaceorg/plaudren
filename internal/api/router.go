@@ -1,8 +1,6 @@
 package api
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -10,9 +8,7 @@ import (
 )
 
 // type of the function that handles the http request
-type HTTPFunc func(http.ResponseWriter, *http.Request) *ApiError
-
-type HTTPMethod string
+type HTTPFunc func(http.ResponseWriter, *http.Request) (*ApiData, *ApiError)
 
 // type of the router which registers the functions
 type HTTPRouter interface {
@@ -36,48 +32,6 @@ type HTTPRouter interface {
 
 	//called before the router is attached to the server
 	Register()
-}
-
-// allowed methods
-const (
-	GET    HTTPMethod = "GET"
-	POST   HTTPMethod = "POST"
-	PUT    HTTPMethod = "PUT"
-	PATCH  HTTPMethod = "PATCH"
-	DELETE HTTPMethod = "DELETE"
-)
-
-// handles the URI of the api which is to be registered with the Router
-type Route struct {
-	method   HTTPMethod
-	path     string
-	httpfunc HTTPFunc
-}
-
-func (route *Route) GetRoute() string {
-	return fmt.Sprintf("%s %s", route.method, route.path)
-}
-
-// return the http handler for the routes
-// handles the encoding (json,grpc...)
-func (route *Route) GetHandler() func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if err := route.httpfunc(w, r); err != nil {
-			json.NewEncoder(w).Encode(err)
-			return
-		}
-	}
-}
-
-func NewRoute(method HTTPMethod, path string, httpfunc HTTPFunc) (*Route, error) {
-	if len(path) == 0 || path[0] != '/' {
-		return nil, errors.New("Invalid Route")
-	}
-	return &Route{
-		method:   method,
-		path:     path,
-		httpfunc: httpfunc,
-	}, nil
 }
 
 // router contains a group of routes
@@ -144,7 +98,7 @@ func (r *Router) GetRoutes() []Route {
 
 // Registers a router with the given path
 func (r *Router) Handle(path string, router HTTPRouter) {
-	//calls the initialization of the router	
+	//calls the initialization of the router
 	router.Register()
 
 	r.path = strings.TrimRight(r.path, "/")
@@ -156,6 +110,7 @@ func (r *Router) Handle(path string, router HTTPRouter) {
 	}
 }
 
+// empty function i dont know why but should be there
 func (r *Router) Register() {
 }
 
