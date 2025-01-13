@@ -43,53 +43,38 @@ type Router struct {
 
 func NewRouter(path string) *Router {
 	return &Router{
-		path: path,
+		path: strings.TrimRight(path, "/"),
 	}
+}
+
+func (r *Router) createRoute(method HTTPMethod, path string, httpFunc HTTPFunc) {
+	path = strings.TrimRight(path, "/")
+	route, err := NewRoute(method, r.path+path, httpFunc)
+	if err != nil {
+		slog.Error("Invalid route", "path", path)
+		return
+	}
+	r.routes = append(r.routes, *route)
 }
 
 func (r *Router) Get(path string, httpFunc HTTPFunc) {
-	route, err := NewRoute(GET, path, httpFunc)
-	if err != nil {
-		slog.Error("Invalid route", "path", path)
-		return
-	}
-	r.routes = append(r.routes, *route)
+	r.createRoute(GET, path, httpFunc)
 }
 
 func (r *Router) Put(path string, httpFunc HTTPFunc) {
-	route, err := NewRoute(PUT, path, httpFunc)
-	if err != nil {
-		slog.Error("Invalid route", "path", path)
-		return
-	}
-	r.routes = append(r.routes, *route)
+	r.createRoute(PUT, path, httpFunc)
 }
 
 func (r *Router) Post(path string, httpFunc HTTPFunc) {
-	route, err := NewRoute(POST, path, httpFunc)
-	if err != nil {
-		slog.Error("Invalid route", "path", path)
-		return
-	}
-	r.routes = append(r.routes, *route)
+	r.createRoute(POST, path, httpFunc)
 }
 
 func (r *Router) Patch(path string, httpFunc HTTPFunc) {
-	route, err := NewRoute(PATCH, path, httpFunc)
-	if err != nil {
-		slog.Error("Invalid route", "path", path)
-		return
-	}
-	r.routes = append(r.routes, *route)
+	r.createRoute(PATCH, path, httpFunc)
 }
 
 func (r *Router) Delete(path string, httpFunc HTTPFunc) {
-	route, err := NewRoute(DELETE, path, httpFunc)
-	if err != nil {
-		slog.Error("Invalid route", "path", path)
-		return
-	}
-	r.routes = append(r.routes, *route)
+	r.createRoute(DELETE, path, httpFunc)
 }
 
 func (r *Router) GetRoutes() []Route {
@@ -116,6 +101,6 @@ func (r *Router) Register() {
 
 func (r *Router) RegisterServer(mux *http.ServeMux) {
 	for _, route := range r.routes {
-		mux.HandleFunc(route.GetRoute(r.path), route.GetHandler())
+		mux.HandleFunc(route.GetRoute(), route.GetHandler())
 	}
 }
