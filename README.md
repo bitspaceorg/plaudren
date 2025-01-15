@@ -1,4 +1,5 @@
 # Yet Another Amateur Router Implementation (plaudren)
+
 ## Dont ask what's the name supposed to mean
 
 Because the world definitely needed one more HTTP router implementation in Go! 🎉
@@ -129,6 +130,7 @@ router.Get("/", func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiErro
     }, nil
 })
 ```
+
 ### Middleware (Everyone has it,and so do I)
 
 This router supports middleware for both individual routes and entire routers. Here's how to add some trust issues to your routes:
@@ -168,83 +170,25 @@ func MockMiddleware(w http.ResponseWriter, r *http.Request) *ApiError {
     body := struct {
         Type int `json:"type"`
     }{}
-    
+
     if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
         return NewError("Invalid JSON").SetCode(http.StatusBadRequest)
     }
-    
+
     if body.Type == 0 {
         return NewError("Invalid type").SetCode(http.StatusInternalServerError)
     }
-    
+
     return nil  // All good!
 }
 ```
 
-## Testing Middleware
-
-Because even middleware needs therapy... er, testing:
-
-```go
-func TestMiddleware(t *testing.T) {
-    server := New(":8000")
-    router := NewRouter("/")
-    
-    // Add a protected route
-    router.Post("/", func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
-        w.Write([]byte("secret stuff"))
-        return nil, nil
-    }).Use(AuthMiddleware)
-    
-    // Test successful case
-    req := httptest.NewRequest(http.MethodPost, "/", 
-        bytes.NewBuffer([]byte(`{"auth_token":"valid"}`)))
-    res := httptest.NewRecorder()
-    server.server.ServeHTTP(res, req)
-    
-    if res.Code != http.StatusOK {
-        t.Fatal("Valid request was rejected!")
-    }
-    
-    // Test failure case
-    req = httptest.NewRequest(http.MethodPost, "/", 
-        bytes.NewBuffer([]byte(`{"auth_token":"invalid"}`)))
-    res = httptest.NewRecorder()
-    server.server.ServeHTTP(res, req)
-    
-    if res.Code != http.StatusUnauthorized {
-        t.Fatal("Invalid request was accepted!")
-    }
-}
-```
-
-[Previous license and disclaimer sections remain the same...]
-
-
-
 ## Testing (Yes, I Actually Tested My code)
 
-```go
-func TestEndpoint(t *testing.T) {
-    server := New(":8000")
-    router := NewRouter("/api")
+It may pass sometimes, if not try running again.
 
-    router.Get("/test", func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
-        w.Write([]byte("test response"))
-        return nil, nil
-    })
-
-    server.Register(router)
-
-    req := httptest.NewRequest(http.MethodGet, "/api/test", nil)
-    res := httptest.NewRecorder()
-
-    server.server.ServeHTTP(res, req)
-
-    if res.Code != http.StatusOK {
-        t.Fatalf("Expected status OK, got chaos instead: %v", res.Code)
-    }
-}
+```sh
+go test -v ./...
 ```
 
 ## Contributing
@@ -252,4 +196,5 @@ func TestEndpoint(t *testing.T) {
 Found a bug? Want to add a feature? Know how to actually write good code? I am all ears! Please feel free to submit a Pull Request. I promise to read it eventually.
 
 ## License
+
 This software is released under the "It Works On My Machine" license. Use at your own risk!
