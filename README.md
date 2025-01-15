@@ -191,6 +191,11 @@ It may pass sometimes, if not try running again.
 go test -v ./...
 ```
 
+#Todo
+-[] File Server Handler for static files
+-[] Templates handler(htmx baby...)
+-[] CORS and cookie middleware(coz i use those a lot...)
+
 ## Contributing
 
 Found a bug? Want to add a feature? Know how to actually write good code? I am all ears! Please feel free to submit a Pull Request. I promise to read it eventually.
