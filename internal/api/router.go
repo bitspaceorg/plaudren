@@ -15,14 +15,14 @@ type HTTPRouter interface {
 
 	// http methods
 	// the param func should implement the HTTPFunc interface
-	Get(string, HTTPFunc)
-	Post(string, HTTPFunc)
-	Put(string, HTTPFunc)
-	Patch(string, HTTPFunc)
-	Delete(string, HTTPFunc)
+	Get(string, HTTPFunc) HTTPRoute
+	Post(string, HTTPFunc) HTTPRoute
+	Put(string, HTTPFunc) HTTPRoute
+	Patch(string, HTTPFunc) HTTPRoute
+	Delete(string, HTTPFunc) HTTPRoute
 
 	// returns all the routes
-	GetRoutes() []Route
+	GetRoutes() []HTTPRoute
 
 	//register another router with the current router
 	Handle(string, HTTPRouter)
@@ -32,13 +32,20 @@ type HTTPRouter interface {
 
 	//called before the router is attached to the server
 	Register()
+
+	//registers a set of middlewares for the routers
+	//applied to every route registered within the router
+	//takes precedence over the middleware within the route
+	Use(...MiddleWareFunc)
 }
 
 // router contains a group of routes
 // should implement the HTTPRouter interface
 type Router struct {
 	path   string
-	routes []Route
+	routes []HTTPRoute
+
+	middlewares []MiddleWareFunc
 }
 
 func NewRouter(path string) *Router {
@@ -47,37 +54,39 @@ func NewRouter(path string) *Router {
 	}
 }
 
-func (r *Router) createRoute(method HTTPMethod, path string, httpFunc HTTPFunc) {
+func (r *Router) createRoute(method HTTPMethod, path string, httpFunc HTTPFunc) HTTPRoute {
 	path = strings.TrimRight(path, "/")
 	route, err := NewRoute(method, r.path+path, httpFunc)
 	if err != nil {
 		slog.Error("Invalid route", "path", path)
-		return
+		return nil
 	}
-	r.routes = append(r.routes, *route)
+	r.routes = append(r.routes, route)
+
+	return route
 }
 
-func (r *Router) Get(path string, httpFunc HTTPFunc) {
-	r.createRoute(GET, path, httpFunc)
+func (r *Router) Get(path string, httpFunc HTTPFunc) HTTPRoute {
+	return r.createRoute(GET, path, httpFunc)
 }
 
-func (r *Router) Put(path string, httpFunc HTTPFunc) {
-	r.createRoute(PUT, path, httpFunc)
+func (r *Router) Put(path string, httpFunc HTTPFunc) HTTPRoute {
+	return r.createRoute(PUT, path, httpFunc)
 }
 
-func (r *Router) Post(path string, httpFunc HTTPFunc) {
-	r.createRoute(POST, path, httpFunc)
+func (r *Router) Post(path string, httpFunc HTTPFunc) HTTPRoute {
+	return r.createRoute(POST, path, httpFunc)
 }
 
-func (r *Router) Patch(path string, httpFunc HTTPFunc) {
-	r.createRoute(PATCH, path, httpFunc)
+func (r *Router) Patch(path string, httpFunc HTTPFunc) HTTPRoute {
+	return r.createRoute(PATCH, path, httpFunc)
 }
 
-func (r *Router) Delete(path string, httpFunc HTTPFunc) {
-	r.createRoute(DELETE, path, httpFunc)
+func (r *Router) Delete(path string, httpFunc HTTPFunc) HTTPRoute {
+	return r.createRoute(DELETE, path, httpFunc)
 }
 
-func (r *Router) GetRoutes() []Route {
+func (r *Router) GetRoutes() []HTTPRoute {
 	return r.routes
 }
 
@@ -90,7 +99,8 @@ func (r *Router) Handle(path string, router HTTPRouter) {
 	r.path = fmt.Sprintf("%s%s", r.path, path)
 
 	for _, route := range router.GetRoutes() {
-		route.path = fmt.Sprintf("%s%s", r.path, strings.TrimRight(route.path, "/"))
+		route.Prepend(r.path)
+		route.stackMiddleware(r.middlewares)
 		r.routes = append(r.routes, route)
 	}
 }
@@ -103,4 +113,10 @@ func (r *Router) RegisterServer(mux *http.ServeMux) {
 	for _, route := range r.routes {
 		mux.HandleFunc(route.GetRoute(), route.GetHandler())
 	}
+}
+
+// middleware stuff
+// registers the middleware for entire router
+func (r *Router) Use(middlewares ...MiddleWareFunc) {
+	r.middlewares = append(r.middlewares, middlewares...)
 }
