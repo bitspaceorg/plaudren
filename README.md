@@ -181,8 +181,6 @@ func MockMiddleware(w http.ResponseWriter, r *http.Request) *ApiError {
 }
 ```
 
-[Rest of the previous content remains the same...]
-
 ## Testing Middleware
 
 Because even middleware needs therapy... er, testing:
