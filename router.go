@@ -36,7 +36,7 @@ type HTTPRouter interface {
 	//registers a set of middlewares for the routers
 	//applied to every route registered within the router
 	//takes precedence over the middleware within the route
-	Use(...MiddleWareFunc)
+	Use(...MiddleWareFunc) HTTPRouter
 }
 
 // router contains a group of routes
@@ -111,12 +111,14 @@ func (r *Router) Register() {
 
 func (r *Router) RegisterServer(mux *http.ServeMux) {
 	for _, route := range r.routes {
+		route.stackMiddleware(r.middlewares)
 		mux.HandleFunc(route.GetRoute(), route.GetHandler())
 	}
 }
 
 // middleware stuff
 // registers the middleware for entire router
-func (r *Router) Use(middlewares ...MiddleWareFunc) {
+func (r *Router) Use(middlewares ...MiddleWareFunc) HTTPRouter {
 	r.middlewares = append(r.middlewares, middlewares...)
+	return r
 }
