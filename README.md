@@ -192,6 +192,7 @@ go test -v ./...
 ```
 
 ## Todo(Anything else create a issue)
+
 - [ ] File Server Handler for static files
 - [ ] Templates handler(htmx baby...)
 - [ ] CORS and cookie middleware(coz i use those a lot...)
@@ -202,4 +203,4 @@ Found a bug? Want to add a feature? Know how to actually write good code? I am a
 
 ## License
 
-This software is released under the "It Works On My Machine" license. Use at your own risk!
+This project is licensed under the [GLWTSPL](https://github.com/suryaaprakassh/plaudren/blob/main/LICENSE).
