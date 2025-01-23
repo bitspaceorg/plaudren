@@ -22,7 +22,8 @@ const (
 // leaf node of a router
 type HTTPRoute interface {
 	GetRoute() string
-	GetHandler() func(http.ResponseWriter, *http.Request)
+	GetHandleFunc() func(http.ResponseWriter, *http.Request)
+	GetHandler() http.Handler
 
 	//registers a pre route from a router or handler
 	Prepend(string)
@@ -57,7 +58,7 @@ func (route *Route) applyMiddlware(w http.ResponseWriter, r *http.Request) *ApiE
 
 // return the http handler for the routes
 // handles the encoding (json,grpc...)
-func (route *Route) GetHandler() func(http.ResponseWriter, *http.Request) {
+func (route *Route) GetHandleFunc() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		//handling middlewares
@@ -79,6 +80,9 @@ func (route *Route) GetHandler() func(http.ResponseWriter, *http.Request) {
 	}
 }
 
+func (route *Route) GetHandler() http.Handler {
+	return nil
+}
 func NewRoute(method HTTPMethod, path string, httpfunc HTTPFunc) (*Route, error) {
 	if path == "" {
 		path = "/"

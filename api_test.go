@@ -22,7 +22,7 @@ func TestRouter(t *testing.T) {
 	server.server.ServeHTTP(res, req)
 
 	if res.Code != http.StatusOK {
-		t.Fatalf("Path was not served correctly %s","/")
+		t.Fatalf("Path was not served correctly %s", "/")
 	}
 
 	if res.Body.String() != "ok" {
@@ -55,7 +55,7 @@ func TestNestedRouter(t *testing.T) {
 	server.server.ServeHTTP(res, req)
 
 	if res.Code != http.StatusOK {
-		t.Fatalf("Path was not server correctly %s","/test")
+		t.Fatalf("Path was not server correctly %s", "/test")
 	}
 
 	if res.Body.String() != "test" {
@@ -68,7 +68,7 @@ func TestNestedRouter(t *testing.T) {
 	server.server.ServeHTTP(res, req)
 
 	if res.Code != http.StatusOK {
-		t.Fatalf("Path was not server correctly %s","/test/nest")
+		t.Fatalf("Path was not server correctly %s", "/test/nest")
 	}
 
 	if res.Body.String() != "nest" {
@@ -156,3 +156,4 @@ func TestStructImpl(t *testing.T) {
 		t.Fatalf("Invalid Request Body Required:%s Got:%s", "test", res.Body.String())
 	}
 }
+

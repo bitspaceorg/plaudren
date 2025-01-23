@@ -183,6 +183,15 @@ func MockMiddleware(w http.ResponseWriter, r *http.Request) *ApiError {
 }
 ```
 
+### Serving Static Files(coz the world runs on HTML)
+
+FileServer serves the entire directory.
+
+```go
+    router.ServeDir("/test",http.Dir("./test_dir"))
+```
+
+
 ## Testing (Yes, I Actually Tested My code)
 
 It may pass sometimes, if not try running again.
@@ -192,8 +201,7 @@ go test -v ./...
 ```
 
 ## Todo(Anything else create a issue)
-
-- [ ] File Server Handler for static files
+- [x] File Server Handler for static files
 - [ ] Templates handler(htmx baby...)
 - [ ] CORS and cookie middleware(coz i use those a lot...)
 

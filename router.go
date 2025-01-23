@@ -21,8 +21,15 @@ type HTTPRouter interface {
 	Patch(string, HTTPFunc) HTTPRoute
 	Delete(string, HTTPFunc) HTTPRoute
 
+	//static files
+	//serves the contents of the directory
+	ServeDir(string, http.FileSystem) HTTPRoute
+
 	// returns all the routes
 	GetRoutes() []HTTPRoute
+
+	//returns all the fileHandlers
+	GetHandlers() []HTTPRoute
 
 	//register another router with the current router
 	Handle(string, HTTPRouter)
@@ -45,7 +52,8 @@ type Router struct {
 	path   string
 	routes []HTTPRoute
 
-	middlewares []MiddleWareFunc
+	fileHandlers []HTTPRoute
+	middlewares  []MiddleWareFunc
 }
 
 func NewRouter(path string) *Router {
@@ -86,14 +94,27 @@ func (r *Router) Delete(path string, httpFunc HTTPFunc) HTTPRoute {
 	return r.createRoute(DELETE, path, httpFunc)
 }
 
+func (r *Router) ServeDir(path string, dir http.FileSystem) HTTPRoute {
+	path = strings.TrimRight(path, "/")
+	handler := NewFileHandler(dir, r.path+path)
+	r.fileHandlers = append(r.fileHandlers, handler)
+	return handler
+}
+
 func (r *Router) GetRoutes() []HTTPRoute {
 	return r.routes
+}
+
+func (r *Router) GetHandlers() []HTTPRoute {
+	return r.fileHandlers
 }
 
 // Registers a router with the given path
 func (r *Router) Handle(path string, router HTTPRouter) {
 	//calls the initialization of the router
 	router.Register()
+
+	path = strings.TrimRight(path, "/")
 
 	r.path = strings.TrimRight(r.path, "/")
 	r.path = fmt.Sprintf("%s%s", r.path, path)
@@ -103,16 +124,29 @@ func (r *Router) Handle(path string, router HTTPRouter) {
 		route.stackMiddleware(r.middlewares)
 		r.routes = append(r.routes, route)
 	}
+
+	for _, route := range router.GetHandlers() {
+		route.Prepend(r.path)
+		route.stackMiddleware(r.middlewares)
+		r.fileHandlers = append(r.fileHandlers, route)
+	}
 }
 
-// empty function i dont know why but should be there
+// empty function i dont know why but should be there to implement the HTTPRouter interface
 func (r *Router) Register() {
 }
 
 func (r *Router) RegisterServer(mux *http.ServeMux) {
 	for _, route := range r.routes {
+		slog.Info("Api Route", "route", route.GetRoute())
 		route.stackMiddleware(r.middlewares)
-		mux.HandleFunc(route.GetRoute(), route.GetHandler())
+		mux.HandleFunc(route.GetRoute(), route.GetHandleFunc())
+	}
+	for _, handler := range r.fileHandlers {
+		handler.stackMiddleware(r.middlewares)
+		prefix := strings.TrimRight(handler.GetRoute(), "/")
+		slog.Info("File Route", "route", handler.GetRoute(),"prefix",prefix)
+		mux.Handle(handler.GetRoute(), http.StripPrefix(prefix, handler.GetHandler()))
 	}
 }
 

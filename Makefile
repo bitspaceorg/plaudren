@@ -1,5 +1,5 @@
 build:
-	@ go build -o ./bin/plaudren ./cmd/plaudren
+	@ go build -o ./bin/plaudren ./cmd/.
 run: build
 	@ ./bin/plaudren
 test:

@@ -5,13 +5,6 @@ import (
 	"net/http"
 )
 
-/*
-	TODO:
-1. Middleware support
-2. Ws support
-3. Webrtc support
-*/
-
 type ApiServer struct {
 	listenAddr string
 	server     *http.ServeMux
