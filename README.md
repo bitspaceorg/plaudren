@@ -10,7 +10,7 @@ Because the world definitely needed one more HTTP router implementation in Go! ð
 - Support for nested routers
 - HTTP method handlers (GET, POST, etc.)!
 - Structured API implementation support (fancy words for "organizing your code")
-- Custom request/response handling with `ApiData` and `ApiError` types (because error handling should be an adventure)
+- Custom request/response handling with `Data` and `Error` types (because error handling should be an adventure)
 - Path-based routing (I didn't get too creative here)
 
 ## Why This Router?
@@ -34,8 +34,8 @@ server := New(":8000")  // Yes, I hardcoded the port. Fight me.
 router := NewRouter("/")
 
 // Add a route handler (the fun part)
-router.Get("/", func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
-    return NewApiData("Hello,World!"), nil  // Look ma, no errors!
+router.Get("/", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
+    return NewData("Hello,World!"), nil  // Look ma, no errors!
 })
 
 // Register the router (it's official now)
@@ -54,8 +54,8 @@ parentRouter := NewRouter("/api")
 
 // Create child router
 childRouter := NewRouter("/")
-childRouter.Get("/", func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
-    return NewApiData("Child says hi!"), nil
+childRouter.Get("/", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
+    return NewData("Child says hi!"), nil
 })
 
 // Mount child router to parent (thats what she said!)
@@ -79,12 +79,12 @@ func (a *UserAPI) Register() {
     a.Router.Post("/", a.CreateUser) // Create a user (good luck!)
 }
 
-func (a *UserAPI) GetUsers(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
+func (a *UserAPI) GetUsers(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
     // Handle get users (or pretend to)
     return nil, nil
 }
 
-func (a *UserAPI) CreateUser(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
+func (a *UserAPI) CreateUser(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
     // Handle create user (what could go wrong?)
     return nil, NewError("What could go wrong?") //a error would'nt hurt though
 }
@@ -102,7 +102,7 @@ server.Register(api)
 Route handlers use this signature (I tried to make it look professional):
 
 ```go
-func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError)
+func(w http.ResponseWriter, r *http.Request) (*Data, *Error)
 ```
 
 ## Available Methods
@@ -118,14 +118,14 @@ It supports all your favorite HTTP methods (well, most of them):
 This router uses custom error types, because regular errors weren't complicated enough:
 
 ```go
-router.Get("/", func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
+router.Get("/", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
     if err := someOperation(); err != nil {
-        return nil, &ApiError{
+        return nil, &Error{
             Code:    http.StatusInternalServerError,
             Message: "Oops! Something went wrong (as usual)",
         }
     }
-    return &ApiData{
+    return &Data{
         // your response data (assuming you have any)
     }, nil
 })
@@ -137,7 +137,7 @@ This router supports middleware for both individual routes and entire routers. H
 
 ```go
 // Define a middleware function
-func AuthMiddleware(w http.ResponseWriter, r *http.Request) *ApiError {
+func AuthMiddleware(w http.ResponseWriter, r *http.Request) *Error {
     // Check something important (or not)
     if unauthorized := checkAuth(r); unauthorized {
         return NewError("Nice try!").SetCode(http.StatusUnauthorized)
@@ -146,8 +146,8 @@ func AuthMiddleware(w http.ResponseWriter, r *http.Request) *ApiError {
 }
 
 // Apply middleware to a single route
-router.Post("/secure", func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
-    return NewApiData("secure data!"), nil
+router.Post("/secure", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
+    return NewData("secure data!"), nil
 }).Use(AuthMiddleware)
 
 // Or apply middleware to an entire router (trust no one!)
@@ -163,10 +163,10 @@ router.Post("/fort-knox", handler).
 
 ### Error Handling in Middleware
 
-Middleware can return ApiError for clean error handling:
+Middleware can return Error for clean error handling:
 
 ```go
-func MockMiddleware(w http.ResponseWriter, r *http.Request) *ApiError {
+func MockMiddleware(w http.ResponseWriter, r *http.Request) *Error {
     body := struct {
         Type int `json:"type"`
     }{}

@@ -1,13 +1,13 @@
-package api
+package plaud
 
-type ApiData struct {
+type Data struct {
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 	code    int
 }
 
-func NewApiData(message string) *ApiData {
-	data := &ApiData{
+func NewApiData(message string) *Data {
+	data := &Data{
 		Message: message,
 		code:    200,
 		Data:    nil,
@@ -15,12 +15,12 @@ func NewApiData(message string) *ApiData {
 	return data
 }
 
-func (e *ApiData) SetCode(code int) *ApiData {
+func (e *Data) SetCode(code int) *Data {
 	e.code = code
 	return e
 }
 
-func (e *ApiData) SetData(data interface{}) *ApiData {
+func (e *Data) SetData(data interface{}) *Data {
 	e.Data = data
 	return e
 }

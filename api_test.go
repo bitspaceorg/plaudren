@@ -1,4 +1,4 @@
-package api
+package plaud
 
 import (
 	"net/http"
@@ -9,7 +9,7 @@ import (
 func TestRouter(t *testing.T) {
 	server := New(":8000")
 	testRouter := NewRouter("/")
-	testRouter.Get("/", func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
+	testRouter.Get("/", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("ok"))
 		return nil, nil
@@ -33,14 +33,14 @@ func TestRouter(t *testing.T) {
 func TestNestedRouter(t *testing.T) {
 	server := New(":8000")
 	testRouter := NewRouter("/test")
-	testRouter.Get("/", func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
+	testRouter.Get("/", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("test"))
 		return nil, nil
 	})
 
 	nestedRouter := NewRouter("/")
-	nestedRouter.Get("/", func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
+	nestedRouter.Get("/", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("nest"))
 		return nil, nil
@@ -80,14 +80,14 @@ func TestNestedRouter(t *testing.T) {
 func TestOtherMethods(t *testing.T) {
 	server := New(":8000")
 	testRouter := NewRouter("/test")
-	testRouter.Get("/", func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
+	testRouter.Get("/", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("test"))
 		return nil, nil
 	})
 
 	nestedRouter := NewRouter("/")
-	nestedRouter.Post("/", func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
+	nestedRouter.Post("/", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("nest"))
 		return nil, nil
@@ -131,7 +131,7 @@ func (a *TestApi) Register() {
 	a.Router.Get("/", a.TestHttpFunc)
 }
 
-func (a *TestApi) TestHttpFunc(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
+func (a *TestApi) TestHttpFunc(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
 	w.Write([]byte("ok"))
 	return nil, nil
 }

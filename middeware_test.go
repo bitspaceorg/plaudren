@@ -1,4 +1,4 @@
-package api
+package plaud
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ type MockReqMiddlewareBody struct {
 	Type int `json:"type"`
 }
 
-func MockMiddleware(w http.ResponseWriter, r *http.Request) *ApiError {
+func MockMiddleware(w http.ResponseWriter, r *http.Request) *Error {
 	body := MockReqMiddlewareBody{}
 	json.NewDecoder(r.Body).Decode(&body)
 	if body.Type == 0 {
@@ -25,7 +25,7 @@ func MockMiddleware(w http.ResponseWriter, r *http.Request) *ApiError {
 func TestMiddlewareRoute(t *testing.T) {
 	server := New(":8000")
 	testRouter := NewRouter("/")
-	testRouter.Post("/", func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
+	testRouter.Post("/", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("ok"))
 		return nil, nil
@@ -54,7 +54,7 @@ func TestMiddlewareRoute(t *testing.T) {
 	if res.Code != http.StatusInternalServerError {
 		t.Fatalf("Middleware did not work correctly %d", res.Code)
 	}
-	mockError := &ApiError{}
+	mockError := &Error{}
 	json.NewDecoder(res.Body).Decode(mockError)
 	if "test" != mockError.Message {
 		t.Fatalf("Invalid Request Body Got:%s", res.Body.String())
@@ -64,12 +64,12 @@ func TestMiddlewareRoute(t *testing.T) {
 func TestMiddlewareRouter(t *testing.T) {
 	server := New(":8000")
 	testRouter := NewRouter("/").Use(MockMiddleware)
-	testRouter.Post("/ok", func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
+	testRouter.Post("/ok", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("ok"))
 		return nil, nil
 	})
-	testRouter.Post("/not-ok", func(w http.ResponseWriter, r *http.Request) (*ApiData, *ApiError) {
+	testRouter.Post("/not-ok", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("ok"))
 		return nil, nil
@@ -98,7 +98,7 @@ func TestMiddlewareRouter(t *testing.T) {
 	if res.Code != http.StatusInternalServerError {
 		t.Fatalf("Middleware did not work correctly %d", res.Code)
 	}
-	mockError := &ApiError{}
+	mockError := &Error{}
 	json.NewDecoder(res.Body).Decode(mockError)
 	if "test" != mockError.Message {
 		t.Fatalf("Invalid Request Body Got:%s", res.Body.String())

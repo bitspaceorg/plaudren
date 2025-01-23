@@ -1,4 +1,4 @@
-package api
+package plaud
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 // type of the function that handles the http request
-type HTTPFunc func(http.ResponseWriter, *http.Request) (*ApiData, *ApiError)
+type HTTPFunc func(http.ResponseWriter, *http.Request) (*Data, *Error)
 
 // type of the router which registers the functions
 type HTTPRouter interface {

@@ -1,4 +1,4 @@
-package api
+package plaud
 
 import (
 	"encoding/json"
@@ -47,7 +47,7 @@ func (route *Route) GetRoute() string {
 }
 
 // applies a set of all middlware to a route
-func (route *Route) applyMiddlware(w http.ResponseWriter, r *http.Request) *ApiError {
+func (route *Route) applyMiddlware(w http.ResponseWriter, r *http.Request) *Error {
 	for _, middleware := range route.middlewares {
 		if err := middleware(w, r); err != nil {
 			return err

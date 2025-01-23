@@ -1,17 +1,17 @@
-package api
+package plaud
 
-type ApiError struct {
+type Error struct {
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 	code    int
 }
 
-func (e *ApiError) Error() string {
+func (e *Error) Error() string {
 	return e.Message
 }
 
-func NewError(message string) *ApiError {
-	err := &ApiError{
+func NewError(message string) *Error {
+	err := &Error{
 		Message: message,
 		Data:    nil,
 		code:    400,
@@ -19,12 +19,12 @@ func NewError(message string) *ApiError {
 	return err
 }
 
-func (e *ApiError) SetCode(code int) *ApiError {
+func (e *Error) SetCode(code int) *Error {
 	e.code = code
 	return e
 }
 
-func (e *ApiError) SetData(data interface{}) *ApiError{
+func (e *Error) SetData(data interface{}) *Error{
 	e.Data=data
 	return e
 }

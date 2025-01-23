@@ -1,4 +1,4 @@
-package api
+package plaud
 
 import (
 	"log/slog"

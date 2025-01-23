@@ -1,4 +1,4 @@
-package api
+package plaud
 
 import (
 	"fmt"
@@ -29,7 +29,7 @@ func (h *FileHandler) GetRoute() string {
 	return h.path
 }
 
-func (h *FileHandler) applyMiddleware(w http.ResponseWriter, r *http.Request) *ApiError {
+func (h *FileHandler) applyMiddleware(w http.ResponseWriter, r *http.Request) *Error {
 	for _, middleware := range h.middlewares {
 		if err := middleware(w, r); err != nil {
 			return err
