@@ -144,6 +144,17 @@ func (r *Router) RegisterServer(mux *http.ServeMux) {
 	}
 	for _, handler := range r.fileHandlers {
 		handler.stackMiddleware(r.middlewares)
+
+		//handle routes without trailing
+		//TODO: danger ahead
+		// if handler.GetRoute() != "/" {
+		// 	handlePath:=strings.TrimRight(handler.GetRoute(), "/")
+		// 	slog.Info("Registered", "path", handlePath)
+		// 	mux.HandleFunc(handlePath, func(w http.ResponseWriter, r *http.Request) {
+		// 		http.StripPrefix(handlePath, handler.GetHandler()).ServeHTTP(w, r)
+		// 	})
+		// }
+
 		mux.Handle(handler.GetRoute(), http.StripPrefix(handler.GetRoute(), handler.GetHandler()))
 	}
 }
