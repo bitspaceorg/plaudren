@@ -144,9 +144,7 @@ func (r *Router) RegisterServer(mux *http.ServeMux) {
 	}
 	for _, handler := range r.fileHandlers {
 		handler.stackMiddleware(r.middlewares)
-		prefix := strings.TrimRight(handler.GetRoute(), "/")
-		slog.Info("File Route", "route", handler.GetRoute(),"prefix",prefix)
-		mux.Handle(handler.GetRoute(), http.StripPrefix(prefix, handler.GetHandler()))
+		mux.Handle(handler.GetRoute(), http.StripPrefix(handler.GetRoute(), handler.GetHandler()))
 	}
 }
 
