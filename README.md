@@ -207,7 +207,7 @@ go test -v ./...
 
 ## Contributing
 
-Found a bug? Want to add a feature? Know how to actually write good code? I am all ears! Please feel free to submit a Pull Request. I promise to read it eventually. Please refer [Contributing.md](./Contributing.md) for more information.
+Found a bug? Want to add a feature? Know how to actually write good code? I am all ears! Please feel free to submit a Pull Request. I promise to read it eventually. Please refer [CONTRIBUTING.md](./CONTRIBUTING.md) for more information.
 
 ## License
 
