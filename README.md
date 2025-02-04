@@ -20,7 +20,7 @@ Because sometimes you just want to write your own router instead of using the pe
 ## Installation
 
 ```bash
-go get github.com/suryaaprakassh/plaudren # Warning: Amateur code ahead
+go get github.com/bitspaceorg/plaudren 
 ```
 
 ## Quick Start
@@ -166,7 +166,7 @@ router.Post("/fort-knox", handler).
 Middleware can return Error for clean error handling:
 
 ```go
-func MockMiddleware(w http.ResponseWriter, r *http.Request) *Error {
+func MockMiddleware(_ http.ResponseWriter, r *http.Request) *Error {
     body := struct {
         Type int `json:"type"`
     }{}
