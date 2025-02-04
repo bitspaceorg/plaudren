@@ -5,26 +5,26 @@ import (
 	"net/http"
 )
 
-type ApiServer struct {
-	listenAddr string
+type Server struct {
 	server     *http.ServeMux
+	listenAddr string
 }
 
-func New(listenAddr string) *ApiServer {
-	return &ApiServer{
-		listenAddr: listenAddr,
+func New(listenAddr string) *Server {
+	return &Server{
 		server:     http.NewServeMux(),
+		listenAddr: listenAddr,
 	}
 }
 
-func (s *ApiServer) Register(routers ...HTTPRouter) {
+func (s *Server) Register(routers ...HTTPRouter) {
 	for _, router := range routers {
 		router.Register()
 		router.RegisterServer(s.server)
 	}
 }
 
-func (s *ApiServer) Run() error {
+func (s *Server) Run() error {
 	slog.Info("Server started on", "port", s.listenAddr)
 	return http.ListenAndServe(s.listenAddr, s.server)
 }

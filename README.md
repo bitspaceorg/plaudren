@@ -1,4 +1,4 @@
-# Yet Another Amateur Router Implementation (plaudren)
+# Plaudren
 
 ## Dont ask what's the name supposed to mean
 
@@ -20,7 +20,7 @@ Because sometimes you just want to write your own router instead of using the pe
 ## Installation
 
 ```bash
-go get github.com/suryaaprakassh/plaudren # Warning: Amateur code ahead
+go get github.com/bitspaceorg/plaudren 
 ```
 
 ## Quick Start
@@ -166,7 +166,7 @@ router.Post("/fort-knox", handler).
 Middleware can return Error for clean error handling:
 
 ```go
-func MockMiddleware(w http.ResponseWriter, r *http.Request) *Error {
+func MockMiddleware(_ http.ResponseWriter, r *http.Request) *Error {
     body := struct {
         Type int `json:"type"`
     }{}
@@ -207,7 +207,7 @@ go test -v ./...
 
 ## Contributing
 
-Found a bug? Want to add a feature? Know how to actually write good code? I am all ears! Please feel free to submit a Pull Request. I promise to read it eventually.
+Found a bug? Want to add a feature? Know how to actually write good code? I am all ears! Please feel free to submit a Pull Request. I promise to read it eventually. Please refer [CONTRIBUTING.md](./CONTRIBUTING.md) for more information.
 
 ## License
 

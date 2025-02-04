@@ -21,28 +21,28 @@ type HTTPRouter interface {
 	Patch(string, HTTPFunc) HTTPRoute
 	Delete(string, HTTPFunc) HTTPRoute
 
-	//static files
-	//serves the contents of the directory
+	// static files
+	// serves the contents of the directory
 	ServeDir(string, http.FileSystem) HTTPRoute
 
 	// returns all the routes
 	GetRoutes() []HTTPRoute
 
-	//returns all the fileHandlers
+	// returns all the fileHandlers
 	GetHandlers() []HTTPRoute
 
-	//register another router with the current router
+	// register another router with the current router
 	Handle(string, HTTPRouter)
 
-	//register the router with a mux to handle http transport
+	// register the router with a mux to handle http transport
 	RegisterServer(*http.ServeMux)
 
-	//called before the router is attached to the server
+	// called before the router is attached to the server
 	Register()
 
-	//registers a set of middlewares for the routers
-	//applied to every route registered within the router
-	//takes precedence over the middleware within the route
+	// registers a set of middlewares for the routers
+	// applied to every route registered within the router
+	// takes precedence over the middleware within the route
 	Use(...MiddleWareFunc) HTTPRouter
 }
 
@@ -111,7 +111,7 @@ func (r *Router) GetHandlers() []HTTPRoute {
 
 // Registers a router with the given path
 func (r *Router) Handle(path string, router HTTPRouter) {
-	//calls the initialization of the router
+	// calls the initialization of the router
 	router.Register()
 
 	path = strings.TrimRight(path, "/")
@@ -144,6 +144,17 @@ func (r *Router) RegisterServer(mux *http.ServeMux) {
 	}
 	for _, handler := range r.fileHandlers {
 		handler.stackMiddleware(r.middlewares)
+
+		// handle routes without trailing
+		// TODO: danger ahead
+		// if handler.GetRoute() != "/" {
+		// 	handlePath:=strings.TrimRight(handler.GetRoute(), "/")
+		// 	slog.Info("Registered", "path", handlePath)
+		// 	mux.HandleFunc(handlePath, func(w http.ResponseWriter, r *http.Request) {
+		// 		http.StripPrefix(handlePath, handler.GetHandler()).ServeHTTP(w, r)
+		// 	})
+		// }
+
 		mux.Handle(handler.GetRoute(), http.StripPrefix(handler.GetRoute(), handler.GetHandler()))
 	}
 }

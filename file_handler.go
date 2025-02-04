@@ -16,6 +16,7 @@ func NewFileHandler(dir http.FileSystem, path string) *FileHandler {
 	if path == "" {
 		path = "/"
 	}
+
 	return &FileHandler{
 		handler: http.FileServer(dir),
 		path:    path,
@@ -26,15 +27,18 @@ func (h *FileHandler) GetRoute() string {
 	if h.path != "/" {
 		return fmt.Sprintf("%s/", h.path)
 	}
+
 	return h.path
 }
 
+//nolint:unused // TODO: Should be used in a future commit
 func (h *FileHandler) applyMiddleware(w http.ResponseWriter, r *http.Request) *Error {
 	for _, middleware := range h.middlewares {
 		if err := middleware(w, r); err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 

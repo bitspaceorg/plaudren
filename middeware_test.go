@@ -12,22 +12,28 @@ type MockReqMiddlewareBody struct {
 	Type int `json:"type"`
 }
 
-func MockMiddleware(w http.ResponseWriter, r *http.Request) *Error {
+func MockMiddleware(_ http.ResponseWriter, r *http.Request) *Error {
 	body := MockReqMiddlewareBody{}
-	json.NewDecoder(r.Body).Decode(&body)
+	err := json.NewDecoder(r.Body).Decode(&body)
+	if err != nil {
+		return NewError("Could Not Decode Body").SetCode(http.StatusInternalServerError)
+	}
 	if body.Type == 0 {
 		return NewError("test").SetCode(http.StatusInternalServerError)
-	} else {
-		return nil
 	}
+
+	return nil
 }
 
 func TestMiddlewareRoute(t *testing.T) {
 	server := New(":8000")
 	testRouter := NewRouter("/")
-	testRouter.Post("/", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
+	testRouter.Post("/", func(w http.ResponseWriter, _ *http.Request) (*Data, *Error) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("ok"))
+		_, err := w.Write([]byte("ok"))
+		if err != nil {
+			t.Log("[WARN] Could not write to response writer")
+		}
 		return nil, nil
 	}).Use(MockMiddleware)
 	server.Register(testRouter)
@@ -55,8 +61,11 @@ func TestMiddlewareRoute(t *testing.T) {
 		t.Fatalf("Middleware did not work correctly %d", res.Code)
 	}
 	mockError := &Error{}
-	json.NewDecoder(res.Body).Decode(mockError)
-	if "test" != mockError.Message {
+	err := json.NewDecoder(res.Body).Decode(mockError)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if mockError.Message != "test" {
 		t.Fatalf("Invalid Request Body Got:%s", res.Body.String())
 	}
 }
@@ -64,14 +73,20 @@ func TestMiddlewareRoute(t *testing.T) {
 func TestMiddlewareRouter(t *testing.T) {
 	server := New(":8000")
 	testRouter := NewRouter("/").Use(MockMiddleware)
-	testRouter.Post("/ok", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
+	testRouter.Post("/ok", func(w http.ResponseWriter, _ *http.Request) (*Data, *Error) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("ok"))
+		_, err := w.Write([]byte("ok"))
+		if err != nil {
+			t.Log("[WARN] Could not write to response writer")
+		}
 		return nil, nil
 	})
-	testRouter.Post("/not-ok", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
+	testRouter.Post("/not-ok", func(w http.ResponseWriter, _ *http.Request) (*Data, *Error) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("ok"))
+		_, err := w.Write([]byte("ok"))
+		if err != nil {
+			t.Log("[WARN] Could not write to response writer")
+		}
 		return nil, nil
 	})
 	server.Register(testRouter)
@@ -99,8 +114,11 @@ func TestMiddlewareRouter(t *testing.T) {
 		t.Fatalf("Middleware did not work correctly %d", res.Code)
 	}
 	mockError := &Error{}
-	json.NewDecoder(res.Body).Decode(mockError)
-	if "test" != mockError.Message {
+	err := json.NewDecoder(res.Body).Decode(mockError)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if mockError.Message != "test" {
 		t.Fatalf("Invalid Request Body Got:%s", res.Body.String())
 	}
 }

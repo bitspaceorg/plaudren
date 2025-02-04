@@ -9,14 +9,19 @@ import (
 func TestRouter(t *testing.T) {
 	server := New(":8000")
 	testRouter := NewRouter("/")
-	testRouter.Get("/", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
+	testRouter.Get("/", func(w http.ResponseWriter, _ *http.Request) (*Data, *Error) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("ok"))
+		_, err := w.Write([]byte("ok"))
+		if err != nil {
+			t.Log("[WARN] Could not write to response writer.")
+		}
+
 		return nil, nil
 	})
 	server.Register(testRouter)
 
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
+	defer req.Body.Close()
 	res := httptest.NewRecorder()
 
 	server.server.ServeHTTP(res, req)
@@ -33,23 +38,30 @@ func TestRouter(t *testing.T) {
 func TestNestedRouter(t *testing.T) {
 	server := New(":8000")
 	testRouter := NewRouter("/test")
-	testRouter.Get("/", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
+	testRouter.Get("/", func(w http.ResponseWriter, _ *http.Request) (*Data, *Error) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("test"))
+		_, err := w.Write([]byte("test"))
+		if err != nil {
+			t.Log("[WARN] Could not write to response writer")
+		}
 		return nil, nil
 	})
 
 	nestedRouter := NewRouter("/")
-	nestedRouter.Get("/", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
+	nestedRouter.Get("/", func(w http.ResponseWriter, _ *http.Request) (*Data, *Error) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("nest"))
+		_, err := w.Write([]byte("nest"))
+		if err != nil {
+			t.Log("[WARN] Could not write to response writer")
+		}
 		return nil, nil
 	})
 
 	testRouter.Handle("/nest", nestedRouter)
 	testRouter.RegisterServer(server.server)
 
-	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+	defer req.Body.Close()
 	res := httptest.NewRecorder()
 
 	server.server.ServeHTTP(res, req)
@@ -62,7 +74,8 @@ func TestNestedRouter(t *testing.T) {
 		t.Fatalf("Invalid Request Body Required:%s Got:%s", "test", res.Body.String())
 	}
 
-	req = httptest.NewRequest(http.MethodGet, "/test/nest", nil)
+	req = httptest.NewRequest(http.MethodGet, "/test/nest", http.NoBody)
+	defer req.Body.Close()
 	res = httptest.NewRecorder()
 
 	server.server.ServeHTTP(res, req)
@@ -74,29 +87,34 @@ func TestNestedRouter(t *testing.T) {
 	if res.Body.String() != "nest" {
 		t.Fatalf("Invalid Request Body Required:%s Got:%s", "nest", res.Body.String())
 	}
-
 }
 
 func TestOtherMethods(t *testing.T) {
 	server := New(":8000")
 	testRouter := NewRouter("/test")
-	testRouter.Get("/", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
+	testRouter.Get("/", func(w http.ResponseWriter, _ *http.Request) (*Data, *Error) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("test"))
+		_, err := w.Write([]byte("test"))
+		if err != nil {
+			t.Log("[WARN] Could not write to response writer")
+		}
 		return nil, nil
 	})
 
 	nestedRouter := NewRouter("/")
-	nestedRouter.Post("/", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
+	nestedRouter.Post("/", func(w http.ResponseWriter, _ *http.Request) (*Data, *Error) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("nest"))
+		_, err := w.Write([]byte("nest"))
+		if err != nil {
+			t.Log("[WARN] Could not write to response writer")
+		}
 		return nil, nil
 	})
 
 	testRouter.Handle("/nest", nestedRouter)
 	testRouter.RegisterServer(server.server)
 
-	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
 	res := httptest.NewRecorder()
 
 	server.server.ServeHTTP(res, req)
@@ -109,7 +127,7 @@ func TestOtherMethods(t *testing.T) {
 		t.Fatalf("Invalid Request Body Required:%s Got:%s", "test", res.Body.String())
 	}
 
-	req = httptest.NewRequest(http.MethodPost, "/test/nest", nil)
+	req = httptest.NewRequest(http.MethodPost, "/test/nest", http.NoBody)
 	res = httptest.NewRecorder()
 
 	server.server.ServeHTTP(res, req)
@@ -123,27 +141,33 @@ func TestOtherMethods(t *testing.T) {
 	}
 }
 
-type TestApi struct {
+type TestAPI struct {
 	*Router
+	t *testing.T
 }
 
-func (a *TestApi) Register() {
+func (a *TestAPI) Register() {
 	a.Router.Get("/", a.TestHttpFunc)
 }
 
-func (a *TestApi) TestHttpFunc(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
-	w.Write([]byte("ok"))
+func (a *TestAPI) TestHttpFunc(w http.ResponseWriter, _ *http.Request) (*Data, *Error) {
+	_, err := w.Write([]byte("ok"))
+	if err != nil {
+		a.t.Log("[WARN] Could not write to response writer")
+	}
 	return nil, nil
 }
 
 func TestStructImpl(t *testing.T) {
 	server := New(":8000")
-	api := &TestApi{
+	api := &TestAPI{
 		Router: NewRouter("/"),
+		t:      t,
 	}
+
 	server.Register(api)
 
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 	res := httptest.NewRecorder()
 
 	server.server.ServeHTTP(res, req)
@@ -156,4 +180,3 @@ func TestStructImpl(t *testing.T) {
 		t.Fatalf("Invalid Request Body Required:%s Got:%s", "test", res.Body.String())
 	}
 }
-

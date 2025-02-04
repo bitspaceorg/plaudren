@@ -1,8 +1,10 @@
 package plaud
 
+import "net/http"
+
 type Error struct {
-	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
+	Message string      `json:"message"`
 	code    int
 }
 
@@ -11,12 +13,11 @@ func (e *Error) Error() string {
 }
 
 func NewError(message string) *Error {
-	err := &Error{
+	return &Error{
 		Message: message,
 		Data:    nil,
-		code:    400,
+		code:    http.StatusBadRequest,
 	}
-	return err
 }
 
 func (e *Error) SetCode(code int) *Error {
@@ -24,7 +25,7 @@ func (e *Error) SetCode(code int) *Error {
 	return e
 }
 
-func (e *Error) SetData(data interface{}) *Error{
-	e.Data=data
+func (e *Error) SetData(data interface{}) *Error {
+	e.Data = data
 	return e
 }
