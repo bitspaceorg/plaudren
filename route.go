@@ -25,12 +25,12 @@ type HTTPRoute interface {
 	GetHandleFunc() func(http.ResponseWriter, *http.Request)
 	GetHandler() http.Handler
 
-	//registers a pre route from a router or handler
+	// registers a pre route from a router or handler
 	Prepend(string)
 
-	//registers the routers middlewares to the route
+	// registers the routers middlewares to the route
 	stackMiddleware([]MiddleWareFunc)
-	//registers route specific middleware
+	// registers route specific middleware
 	Use(...MiddleWareFunc)
 }
 
@@ -58,23 +58,30 @@ func (route *Route) applyMiddlware(w http.ResponseWriter, r *http.Request) *Erro
 
 // return the http handler for the routes
 // handles the encoding (json,grpc...)
+//
+//nolint:errcheck // TODO: Error handling will be added in a future commit
 func (route *Route) GetHandleFunc() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-
-		//handling middlewares
+		// handling middlewares
 		if err := route.applyMiddlware(w, r); err != nil {
 			w.WriteHeader(err.code)
+			// TODO: handle error below
+			// have a default logger with the router
 			json.NewEncoder(w).Encode(err)
+
 			return
 		}
-
 		data, err := route.httpfunc(w, r)
-		//dont ask y coz i don't
+		// dont ask y coz i don't
 		if err != nil {
 			w.WriteHeader(err.code)
+			// TODO: handle error below
+			// have a default logger with the router
 			json.NewEncoder(w).Encode(err)
 		} else if data != nil {
 			w.WriteHeader(data.code)
+			// TODO: handle error below
+			// have a default logger with the router
 			json.NewEncoder(w).Encode(data)
 		}
 	}
@@ -88,7 +95,7 @@ func NewRoute(method HTTPMethod, path string, httpfunc HTTPFunc) (*Route, error)
 		path = "/"
 	}
 	if path[0] != '/' {
-		return nil, errors.New("Invalid Route")
+		return nil, errors.New("invalid route")
 	}
 	return &Route{
 		method:   method,
@@ -97,16 +104,16 @@ func NewRoute(method HTTPMethod, path string, httpfunc HTTPFunc) (*Route, error)
 	}, nil
 }
 
-func (r *Route) stackMiddleware(middleware []MiddleWareFunc) {
-	r.middlewares = append(middleware, r.middlewares...)
+func (route *Route) stackMiddleware(middleware []MiddleWareFunc) {
+	route.middlewares = append(middleware, route.middlewares...)
 }
 
 // registers a set of all middlewares
 // adds the middlewares in order
-func (r *Route) Use(middlewares ...MiddleWareFunc) {
-	r.middlewares = append(r.middlewares, middlewares...)
+func (route *Route) Use(middlewares ...MiddleWareFunc) {
+	route.middlewares = append(route.middlewares, middlewares...)
 }
 
-func (r *Route) Prepend(path string) {
-	r.path = fmt.Sprintf("%s%s", path, strings.TrimRight(r.path, "/"))
+func (route *Route) Prepend(path string) {
+	route.path = fmt.Sprintf("%s%s", path, strings.TrimRight(route.path, "/"))
 }

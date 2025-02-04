@@ -1,17 +1,20 @@
 package plaud
 
+import "net/http"
+
 type Data struct {
-	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
+	Message string      `json:"message"`
 	code    int
 }
 
-func NewApiData(message string) *Data {
+func NewData(message string) *Data {
 	data := &Data{
 		Message: message,
-		code:    200,
+		code:    http.StatusOK,
 		Data:    nil,
 	}
+
 	return data
 }
 
