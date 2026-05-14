@@ -1,6 +1,5 @@
 # Plaudren
 
-## Dont ask what's the name supposed to mean
 
 Because the world definitely needed one more HTTP router implementation in Go! ðŸŽ‰
 
@@ -9,9 +8,9 @@ Because the world definitely needed one more HTTP router implementation in Go! ð
 - Simple and intuitive API (so simple that even you can probably use it)
 - Support for nested routers
 - HTTP method handlers (GET, POST, etc.)!
-- Structured API implementation support (fancy words for "organizing your code")
-- Custom request/response handling with `Data` and `Error` types (because error handling should be an adventure)
-- Path-based routing (I didn't get too creative here)
+- Structured API implementation support 
+- Custom request/response handling with `Data` and `Error` types 
+- Path-based routing 
 
 ## Why This Router?
 
@@ -25,49 +24,41 @@ go get github.com/bitspaceorg/plaudren
 
 ## Quick Start
 
-### Basic Router (The "Hello World" of Routing)
+### Basic Router 
 
-Create a simple router with a single endpoint (because we all have to start somewhere):
+Create a simple router with a single endpoint:
 
 ```go
-server := New(":8000")  // Yes, I hardcoded the port. Fight me.
+server := New(":8000")
 router := NewRouter("/")
 
 // Add a route handler (the fun part)
 router.Get("/", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
-    return NewData("Hello,World!"), nil  // Look ma, no errors!
+    return NewData("Hello,World!"), nil 
 })
 
-// Register the router (it's official now)
 server.Register(router)
 ```
 
-### Nested Routers (Inspired by Inception)
+### Nested Routers 
 
-You can create nested routers, because I heard you like routers in your routers:
-
+You can create nested routers
 ```go
 server := New(":8000")
 
-// Create parent router
 parentRouter := NewRouter("/api")
 
-// Create child router
 childRouter := NewRouter("/")
 childRouter.Get("/", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
     return NewData("Child says hi!"), nil
 })
 
-// Mount child router to parent (thats what she said!)
 parentRouter.Handle("/v1", childRouter)
 
-// Register parent router (make it official)
 server.Register(parentRouter)
 ```
 
-### Structured API Implementation (For the Organized Code)
-
-For those who like their code as organized as their sock drawer:
+### Structured API Implementation (For the Organized Code):
 
 ```go
 type UserAPI struct {
@@ -75,21 +66,18 @@ type UserAPI struct {
 }
 
 func (a *UserAPI) Register() {
-    a.Router.Get("/", a.GetUsers)    // List all users (if any exist)
-    a.Router.Post("/", a.CreateUser) // Create a user (good luck!)
+    a.Router.Get("/", a.GetUsers)    
+    a.Router.Post("/", a.CreateUser)
 }
 
 func (a *UserAPI) GetUsers(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
-    // Handle get users (or pretend to)
     return nil, nil
 }
 
 func (a *UserAPI) CreateUser(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
-    // Handle create user (what could go wrong?)
-    return nil, NewError("What could go wrong?") //a error would'nt hurt though
+    return nil, NewError("What could go wrong?") 
 }
 
-// Usage (it's easier than it looks)
 server := New(":8000")
 api := &UserAPI{
     Router: NewRouter("/users"),
@@ -97,9 +85,9 @@ api := &UserAPI{
 server.Register(api)
 ```
 
-## Route Handler Signature (The magic)
+## Route Handler Signature
 
-Route handlers use this signature (I tried to make it look professional):
+Route handlers use this signature:
 
 ```go
 func(w http.ResponseWriter, r *http.Request) (*Data, *Error)
@@ -109,13 +97,13 @@ func(w http.ResponseWriter, r *http.Request) (*Data, *Error)
 
 It supports all your favorite HTTP methods (well, most of them):
 
-- `Get(path string, handler HandlerFunc)` - For when you want to get stuff
-- `Post(path string, handler HandlerFunc)` - For when you want to create stuff
+- `Get(path string, handler HandlerFunc)` 
+- `Post(path string, handler HandlerFunc)`
 - Too lazy to list the rest.
 
-## Error Handling (Because Things Will Go Wrong)
+## Error Handling
 
-This router uses custom error types, because regular errors weren't complicated enough:
+This router uses custom error types:
 
 ```go
 router.Get("/", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
@@ -131,18 +119,17 @@ router.Get("/", func(w http.ResponseWriter, r *http.Request) (*Data, *Error) {
 })
 ```
 
-### Middleware (Everyone has it,and so do I)
+### Middleware
 
-This router supports middleware for both individual routes and entire routers. Here's how to add some trust issues to your routes:
+This router supports middleware for both individual routes and entire routers:
 
 ```go
 // Define a middleware function
 func AuthMiddleware(w http.ResponseWriter, r *http.Request) *Error {
-    // Check something important (or not)
     if unauthorized := checkAuth(r); unauthorized {
         return NewError("Nice try!").SetCode(http.StatusUnauthorized)
     }
-    return nil  // All good, proceed!
+    return nil
 }
 
 // Apply middleware to a single route
@@ -150,11 +137,11 @@ router.Post("/secure", func(w http.ResponseWriter, r *http.Request) (*Data, *Err
     return NewData("secure data!"), nil
 }).Use(AuthMiddleware)
 
-// Or apply middleware to an entire router (trust no one!)
+// Or apply middleware to an entire router
 router := NewRouter("/api").Use(AuthMiddleware)
 ```
 
-Middleware Chaining (Because One Layer of Security Isn't Enough):
+Middleware Chaining :
 
 ```go
 router.Post("/fort-knox", handler).
@@ -183,7 +170,7 @@ func MockMiddleware(_ http.ResponseWriter, r *http.Request) *Error {
 }
 ```
 
-### Serving Static Files(coz the world runs on HTML)
+### Serving Static Files
 
 FileServer serves the entire directory.
 
@@ -192,7 +179,7 @@ FileServer serves the entire directory.
 ```
 
 
-## Testing (Yes, I Actually Tested My code)
+## Testing 
 
 It may pass sometimes, if not try running again.
 
@@ -203,7 +190,7 @@ go test -v ./...
 ## Todo(Anything else create a issue)
 - [x] File Server Handler for static files
 - [ ] Templates handler(htmx baby...)
-- [ ] CORS and cookie middleware(coz i use those a lot...)
+- [ ] CORS and cookie middleware(
 
 ## Contributing
 
